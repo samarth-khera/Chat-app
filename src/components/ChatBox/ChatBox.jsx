@@ -5,10 +5,7 @@ import { Appcontext } from "../../context/Appcontext";
 import { db } from "../../config/firebase";
 import { updateDoc, arrayUnion, doc, onSnapshot, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
-import  upload  from "../../lib/upload";
-
-
-
+import upload from "../../lib/upload";
 
 const ChatBox = () => {
   const { userData, chatUser, messages, setMessages, messageId } = useContext(Appcontext);
@@ -18,87 +15,90 @@ const ChatBox = () => {
   // ✅ Real-time listener for messages
   useEffect(() => {
     if (!messageId) return;
-
     const msgDocRef = doc(db, "messages", messageId);
     const unSub = onSnapshot(msgDocRef, (res) => {
       const msgList = res.data()?.messages || [];
       setMessages([...msgList].reverse());
     });
-
-    return () => unSub(); // cleanup when switching chat
+    return () => unSub();
   }, [messageId, setMessages]);
 
-  // ✅ Helper: update lastMessage for receiver
-  const updateLastMessageForReceiver = async (lastText) => {
-    const receiverId = chatUser.rId;
+  // ✅ Helper: Update receiver chat in ONE write
+  const updateReceiverChat = async (lastText) => {
+    const receiverId = chatUser?.rId;
+    if (!receiverId || !messageId) return;
+
     const userChatsRef = doc(db, "chats", receiverId);
     const userChatsSnap = await getDoc(userChatsRef);
-
     if (!userChatsSnap.exists()) return;
-    const userChatData = userChatsSnap.data();
 
-    const chatIndex = userChatData.chatsData.findIndex(
-      (c) => c.messageId === messageId
-    );
+    const userChatData = userChatsSnap.data()?.chatsData || [];
+    const chatIndex = userChatData.findIndex(c => c.messageId === messageId);
 
     if (chatIndex !== -1) {
-      userChatData.chatsData[chatIndex].lastMessage = lastText;
-      userChatData.chatsData[chatIndex].updatedAt = Date.now();
-      userChatData.chatsData[chatIndex].messageSeen = false;
+      userChatData[chatIndex] = {
+        ...userChatData[chatIndex],
+        lastMessage: lastText,
+        updatedAt: Date.now(),
+        messageSeen: false
+      };
 
-      await updateDoc(userChatsRef, {
-        chatsData: userChatData.chatsData,
-      });
+      await updateDoc(userChatsRef, { chatsData: userChatData });
     }
   };
 
-  // ✅ Send text message
+  // ✅ Send text message (Combined write)
   const sendMessage = async () => {
     if (!input.trim() || !messageId) return;
 
+    const messageText = input.trim();
+    setInput(""); // clear UI fast
+
     const newMsg = {
       senderId: userData.id,
-      text: input.trim(),
-      image: null, // no image for text messages
+      text: messageText,
+      image: null,
       createdAt: Date.now(),
     };
 
     try {
-      await updateDoc(doc(db, "messages", messageId), {
-        messages: arrayUnion(newMsg),
-      });
-
-      await updateLastMessageForReceiver(input.slice(0, 30));
-      setInput(""); // clear input
+      await Promise.all([
+        updateDoc(doc(db, "messages", messageId), {
+          messages: arrayUnion(newMsg)
+        }),
+        updateReceiverChat(messageText.slice(0, 30))
+      ]);
     } catch (error) {
       console.error("Message send error:", error);
       toast.error(error.message);
+      setInput(messageText); // restore on failure
     }
   };
 
-  // ✅ Send image message
+  // ✅ Send image message (Combined write)
   const sendImage = async (e) => {
     const file = e.target.files[0];
     if (!file || !messageId) return;
 
     setSending(true);
     try {
-      const fileUrl = await upload(file); // ✅ Upload to Appwrite or Firebase Storage
-
+      const fileUrl = await upload(file);
       if (!fileUrl) throw new Error("Image upload failed");
 
       const newMsg = {
         senderId: userData.id,
-        text: "", // no text for image-only message
-        image: fileUrl, // ✅ store image URL
+        text: "",
+        image: fileUrl,
         createdAt: Date.now(),
       };
 
-      await updateDoc(doc(db, "messages", messageId), {
-        messages: arrayUnion(newMsg),
-      });
+      await Promise.all([
+        updateDoc(doc(db, "messages", messageId), {
+          messages: arrayUnion(newMsg)
+        }),
+        updateReceiverChat("📷 Image")
+      ]);
 
-      await updateLastMessageForReceiver("📷 Image");
       toast.success("Image sent!");
     } catch (error) {
       console.error("Image send error:", error);
@@ -108,7 +108,7 @@ const ChatBox = () => {
     }
   };
 
-  // ✅ Show placeholder if no chat is selected
+  // ✅ Show placeholder if no chat selected
   if (!chatUser) {
     return (
       <div className="chat-welcome">
@@ -122,7 +122,7 @@ const ChatBox = () => {
     <div className="chat-box">
       {/* ✅ CHAT HEADER */}
       <div className="chat-user">
-        <img src={chatUser.userData?.avatar || assets.profile_img} alt="" />
+        <img src={chatUser.userData?.avatar || assets.profile_img} alt="avatar" />
         <p>
           {chatUser.userData?.name}{" "}
           <img className="dot" src={assets.green_dot} alt="online" />
@@ -137,10 +137,7 @@ const ChatBox = () => {
             const isSender = msg.senderId === userData.id;
             return (
               <div key={idx} className={isSender ? "s-msg" : "r-msg"}>
-                {/* ✅ Text message */}
                 {msg.text && <p className="msg">{msg.text}</p>}
-
-                {/* ✅ Image message */}
                 {msg.image && (
                   <img
                     src={msg.image}
@@ -149,11 +146,14 @@ const ChatBox = () => {
                     style={{ maxWidth: "200px", borderRadius: "8px", margin: "5px 0" }}
                   />
                 )}
-
                 <div>
                   <img
-                    src={isSender ? userData.avatar || assets.profile_img : chatUser.userData?.avatar || assets.profile_img}
-                    alt=""
+                    src={
+                      isSender
+                        ? userData.avatar || assets.profile_img
+                        : chatUser.userData?.avatar || assets.profile_img
+                    }
+                    alt="avatar"
                   />
                   <p>{new Date(msg.createdAt).toLocaleTimeString()}</p>
                 </div>
@@ -173,6 +173,7 @@ const ChatBox = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
+        {/* Image Upload */}
         <input
           onChange={sendImage}
           type="file"
@@ -187,6 +188,7 @@ const ChatBox = () => {
             style={{ opacity: sending ? 0.5 : 1 }}
           />
         </label>
+        {/* Send Button */}
         <img
           onClick={sendMessage}
           src={assets.send_button}

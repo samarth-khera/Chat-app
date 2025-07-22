@@ -17,19 +17,22 @@ const AppcontextProvider = (props) => {
   const [messages, setMessages] = useState([]);
   const [chatUser, setChatUser] = useState(null);
 
-  // ✅ Update lastSeen only when user leaves
+  // ✅ Update lastSeen only when leaving
   const updateLastSeenOnExit = (uid) => {
-    window.addEventListener("beforeunload", async () => {
-      if (uid) {
+    let timeout;
+    window.addEventListener("beforeunload", () => {
+      if (!uid) return;
+      clearTimeout(timeout);
+      timeout = setTimeout(async () => {
         try {
           await updateDoc(doc(db, "users", uid), {
             lastSeen: Date.now(),
             status: "offline",
           });
         } catch (err) {
-          console.log("Skipping lastSeen update:", err.message);
+          console.log("Skip lastSeen update:", err.message);
         }
-      }
+      }, 500);
     });
   };
 
@@ -44,10 +47,11 @@ const AppcontextProvider = (props) => {
       const fetchedUser = userSnap.data();
       setUserData(fetchedUser);
 
-      // ✅ Mark online only ONCE after login
-      await updateDoc(userRef, { status: "online" });
+      // ✅ Only mark online if not already online
+      if (fetchedUser.status !== "online") {
+        await updateDoc(userRef, { status: "online" });
+      }
 
-      // ✅ Only update lastSeen when leaving
       updateLastSeenOnExit(uid);
 
       // ✅ Redirect if incomplete profile
@@ -70,7 +74,6 @@ const AppcontextProvider = (props) => {
     if (unsubRef.current) unsubRef.current(); // clear previous listener
 
     const chatRef = doc(db, "chats", uid);
-
     unsubRef.current = onSnapshot(chatRef, async (res) => {
       const data = res.data();
       const chatItems = Array.isArray(data?.chatsData) ? data.chatsData : [];
@@ -97,7 +100,7 @@ const AppcontextProvider = (props) => {
   // ✅ Stop listener on unmount
   useEffect(() => {
     return () => {
-      if (unsubRef.current) unsubRef.current(); // stop listener when unmount
+      if (unsubRef.current) unsubRef.current();
     };
   }, []);
 

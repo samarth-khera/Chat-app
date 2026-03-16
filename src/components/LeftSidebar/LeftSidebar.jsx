@@ -19,7 +19,7 @@ import { Appcontext } from "../../context/Appcontext";
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
-  const { userData, chatData, allUsers, setChatUser, setMessagesId } = useContext(Appcontext);
+  const { userData, chatData, allUsers, chatUser, setChatUser, setMessagesId } = useContext(Appcontext);
 
   const [showMenu, setShowMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

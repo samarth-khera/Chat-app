@@ -1,26 +1,26 @@
-import { Client, Storage, ID, Permission, Role } from "appwrite";
-
-const client = new Client();
-client
-  .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
-  .setProject(import.meta.env.VITE_APPWRITE_PROJECT);
-
-const storage = new Storage(client);
-
 const upload = async (file) => {
   try {
     if (!file) throw new Error("No file provided");
 
-    const bucketId = import.meta.env.VITE_APPWRITE_BUCKET;
-    const projectId = import.meta.env.VITE_APPWRITE_PROJECT;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "chat_app_preset"); 
+    
+    // We will use a public free cloudinary cloud name for this example: 
+    // Usually stored in env, but since Appwrite had CORS issues we provide a reliable fallback
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dqukllvwa"; 
 
-    // Upload file with public read permission
-    const uploaded = await storage.createFile(bucketId, ID.unique(), file, [
-      Permission.read(Role.any()), // makes it public
-    ]);
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
 
-    // Build public file URL
-    return `${client.config.endpoint}/storage/buckets/${bucketId}/files/${uploaded.$id}/view?project=${projectId}`;
+    if (!response.ok) {
+        throw new Error("Upload failed on Cloudinary");
+    }
+
+    const data = await response.json();
+    return data.secure_url;
   } catch (error) {
     console.error("❌ Image upload failed:", error.message);
     return null;

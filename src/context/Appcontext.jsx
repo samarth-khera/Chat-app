@@ -58,10 +58,10 @@ const AppcontextProvider = (props) => {
 
       
       const profileComplete = fetchedUser.avatar && fetchedUser.name;
+      
+      // ✅ Only forcefully redirect if profile is incomplete AND they aren't already on profile page
       if (!profileComplete && currentPath !== "/profile") {
         navigate("/profile");
-      } else if (profileComplete && currentPath !== "/chat") {
-        navigate("/chat");
       }
 
       listenToChats(uid);

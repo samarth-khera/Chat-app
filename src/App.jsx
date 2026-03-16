@@ -25,14 +25,13 @@ const App = () => {
           if (location.pathname === '/') {
             navigate('/chat');
           }
-
-          // ✅ If already on /chat, /profile, or /user/:id, stay there
         } catch (err) {
           console.warn("Failed to load user data:", err.message);
-          // Don't redirect if quota fails
         }
       } else {
-        navigate('/'); // No user → go login
+        if (location.pathname !== '/') {
+          navigate('/'); // No user → go login
+        }
       }
     });
 

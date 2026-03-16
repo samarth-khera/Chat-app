@@ -12,7 +12,7 @@ const ChatBox = () => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
 
-  // ✅ Real-time listener for messages
+  
   useEffect(() => {
     if (!messageId) return;
     const msgDocRef = doc(db, "messages", messageId);
@@ -23,7 +23,7 @@ const ChatBox = () => {
     return () => unSub();
   }, [messageId, setMessages]);
 
-  // ✅ Helper: Update receiver chat in ONE write
+  
   const updateReceiverChat = async (lastText) => {
     const receiverId = chatUser?.rId;
     if (!receiverId || !messageId) return;
@@ -47,12 +47,12 @@ const ChatBox = () => {
     }
   };
 
-  // ✅ Send text message (Combined write)
+  
   const sendMessage = async () => {
     if (!input.trim() || !messageId) return;
 
     const messageText = input.trim();
-    setInput(""); // clear UI fast
+    setInput(""); 
 
     const newMsg = {
       senderId: userData.id,
@@ -71,11 +71,11 @@ const ChatBox = () => {
     } catch (error) {
       console.error("Message send error:", error);
       toast.error(error.message);
-      setInput(messageText); // restore on failure
+      setInput(messageText); 
     }
   };
 
-  // ✅ Send image message (Combined write)
+  
   const sendImage = async (e) => {
     const file = e.target.files[0];
     if (!file || !messageId) return;
@@ -108,10 +108,10 @@ const ChatBox = () => {
     }
   };
 
-  // ✅ Show placeholder if no chat selected
+  
   if (!chatUser) {
     return (
-      <div className="chat-welcome">
+      <div className="chat-welcome hidden-on-mobile">
         <img src={assets.logo_icon} alt="welcome" />
         <p>Chat anytime, anywhere</p>
       </div>
@@ -120,8 +120,14 @@ const ChatBox = () => {
 
   return (
     <div className="chat-box">
-      {/* ✅ CHAT HEADER */}
+      
       <div className="chat-user">
+        <img 
+          src={assets.arrow_icon} 
+          alt="back" 
+          className="back-btn-mobile" 
+          onClick={() => setChatUser(null)} 
+        />
         <img src={chatUser.userData?.avatar || assets.profile_img} alt="avatar" />
         <p>
           {chatUser.userData?.name}{" "}
@@ -130,7 +136,7 @@ const ChatBox = () => {
         <img src={assets.help_icon} alt="help" />
       </div>
 
-      {/* ✅ MESSAGE LIST */}
+      
       <div className="chat-msg">
         {messages?.length > 0 ? (
           messages.map((msg, idx) => {
@@ -165,7 +171,7 @@ const ChatBox = () => {
         )}
       </div>
 
-      {/* ✅ INPUT BOX */}
+      
       <div className="chat-input">
         <input
           type="text"
@@ -173,7 +179,7 @@ const ChatBox = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        {/* Image Upload */}
+        
         <input
           onChange={sendImage}
           type="file"
@@ -188,7 +194,7 @@ const ChatBox = () => {
             style={{ opacity: sending ? 0.5 : 1 }}
           />
         </label>
-        {/* Send Button */}
+       
         <img
           onClick={sendMessage}
           src={assets.send_button}

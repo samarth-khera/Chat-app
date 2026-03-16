@@ -10,7 +10,7 @@ const RightSidebar = () => {
   const [sharedImages, setSharedImages] = useState([]);
 
   useEffect(() => {
-    // ✅ Fetch only when a chat is selected
+    
     const fetchSharedMedia = async () => {
       if (!messageId) {
         setSharedImages([]);
@@ -23,9 +23,9 @@ const RightSidebar = () => {
 
         if (snap.exists()) {
           const allMessages = snap.data()?.messages || [];
-          // ✅ Extract only image messages
+          
           const images = allMessages.filter((msg) => msg.image).map((msg) => msg.image);
-          setSharedImages(images.reverse()); // newest first
+          setSharedImages(images.reverse()); 
         } else {
           setSharedImages([]);
         }
@@ -38,10 +38,10 @@ const RightSidebar = () => {
     fetchSharedMedia();
   }, [messageId]);
 
-  // ✅ Show placeholder if no chat selected
+  
   if (!chatUser) {
     return (
-      <div className="rs">
+      <div className="rs hidden-on-tablet">
         <div className="rs-placeholder">
           <p>Select a chat to view details</p>
         </div>
@@ -52,8 +52,8 @@ const RightSidebar = () => {
   const targetUser = chatUser.userData;
 
   return (
-    <div className="rs">
-      {/* ✅ Selected user's profile */}
+    <div className="rs hidden-on-tablet">
+      
       <div className="rs-profile">
         <img src={targetUser?.avatar || "/default-avatar.png"} alt="avatar" />
         <h3>{targetUser?.name || "Unknown User"}</h3>
@@ -62,7 +62,7 @@ const RightSidebar = () => {
 
       <hr />
 
-      {/* ✅ Shared Media */}
+     
       <div className="rs-media">
         <p>Shared Media</p>
 
@@ -79,7 +79,7 @@ const RightSidebar = () => {
 
       <hr />
 
-      {/* ✅ Logout */}
+      
       <button className="logout-btn" onClick={() => logout()}>
         Logout ({userData?.name || "You"})
       </button>

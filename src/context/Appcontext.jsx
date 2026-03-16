@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, updateDoc, onSnapshot, collection } from "firebase/firestore";
 import { createContext, useState, useEffect, useRef } from "react";
 import { db } from "../config/firebase";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -9,15 +9,17 @@ const AppcontextProvider = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const unsubRef = useRef(null);
-  const userCache = {}; // ✅ Cache user info
+  const userCache = {}; 
 
   const [userData, setUserData] = useState(null);
   const [chatData, setchatData] = useState(null);
   const [messageId, setMessagesId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [chatUser, setChatUser] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const usersUnsubRef = useRef(null);
 
-  // ✅ Update lastSeen only when leaving
+  
   const updateLastSeenOnExit = (uid) => {
     let timeout;
     window.addEventListener("beforeunload", () => {
@@ -36,7 +38,7 @@ const AppcontextProvider = (props) => {
     });
   };
 
-  // ✅ Load user data only once on login
+  
   const loadUserData = async (uid, currentPath) => {
     try {
       const userRef = doc(db, "users", uid);
@@ -47,14 +49,14 @@ const AppcontextProvider = (props) => {
       const fetchedUser = userSnap.data();
       setUserData(fetchedUser);
 
-      // ✅ Only mark online if not already online
+      
       if (fetchedUser.status !== "online") {
         await updateDoc(userRef, { status: "online" });
       }
 
       updateLastSeenOnExit(uid);
 
-      // ✅ Redirect if incomplete profile
+      
       const profileComplete = fetchedUser.avatar && fetchedUser.name;
       if (!profileComplete && currentPath !== "/profile") {
         navigate("/profile");
@@ -62,16 +64,31 @@ const AppcontextProvider = (props) => {
         navigate("/chat");
       }
 
-      // ✅ Start listening to chats
       listenToChats(uid);
+      listenToAllUsers(uid);
     } catch (error) {
       console.error("Error loading user data:", error);
     }
   };
 
-  // ✅ Real-time listener for chat updates with caching
+  const listenToAllUsers = (uid) => {
+    if (usersUnsubRef.current) usersUnsubRef.current();
+
+    const usersRef = collection(db, "users");
+    usersUnsubRef.current = onSnapshot(usersRef, (res) => {
+      const usersList = [];
+      res.forEach((doc) => {
+        const data = doc.data();
+        if (data.id && data.id !== uid) {
+          usersList.push(data);
+        }
+      });
+      setAllUsers(usersList);
+    });
+  };
+
   const listenToChats = (uid) => {
-    if (unsubRef.current) unsubRef.current(); // clear previous listener
+    if (unsubRef.current) unsubRef.current();
 
     const chatRef = doc(db, "chats", uid);
     unsubRef.current = onSnapshot(chatRef, async (res) => {
@@ -97,10 +114,11 @@ const AppcontextProvider = (props) => {
     });
   };
 
-  // ✅ Stop listener on unmount
+  
   useEffect(() => {
     return () => {
       if (unsubRef.current) unsubRef.current();
+      if (usersUnsubRef.current) usersUnsubRef.current();
     };
   }, []);
 
@@ -116,6 +134,7 @@ const AppcontextProvider = (props) => {
     setMessagesId,
     chatUser,
     setChatUser,
+    allUsers,
   };
 
   return <Appcontext.Provider value={value}>{props.children}</Appcontext.Provider>;

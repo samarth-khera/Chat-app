@@ -3,6 +3,7 @@ import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login/Login';
 import Chat from './pages/Chat/Chat';
 import ProfileUpdate from './pages/ProfileUpdate/ProfileUpdate';
+import UserProfile from './pages/UserProfile/UserProfile';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -21,12 +22,11 @@ const App = () => {
           // ✅ Load user data no matter what
           await loadUserData(user.uid, location.pathname);
 
-          // ✅ Only auto-redirect if user is on login page
           if (location.pathname === '/') {
             navigate('/chat');
           }
 
-          // ✅ If already on /chat or /profile, stay there
+          // ✅ If already on /chat, /profile, or /user/:id, stay there
         } catch (err) {
           console.warn("Failed to load user data:", err.message);
           // Don't redirect if quota fails
@@ -46,6 +46,7 @@ const App = () => {
         <Route path='/' element={<Login />} />
         <Route path='/chat' element={<Chat />} />
         <Route path='/profile' element={<ProfileUpdate />} />
+        <Route path='/user/:id' element={<UserProfile />} />
       </Routes>
     </>
   );

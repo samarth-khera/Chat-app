@@ -1,18 +1,72 @@
-.chat{
+.chat {
     min-height: 100vh;
-    background: linear-gradient(#596Aff,#383699);
+    background: linear-gradient(#596Aff, #383699);
     display: grid;
     place-items: center;
 }
-.chat-container{
+
+.chat-container {
     width: 95%;
     height: 75vh;
-    max-width: 1000px;
+    max-width: 1200px;
     background-color: aliceblue;
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 280px 1fr 280px;
+    border-radius: 12px;
+    overflow: hidden;
 }
-.loading{
+
+.loading {
     font-size: 50px;
     color: white;
+}
+
+@media (max-width: 1024px) {
+    .chat-container {
+        grid-template-columns: 250px 1fr 250px;
+    }
+}
+
+@media (max-width: 900px) {
+    .chat-container {
+        grid-template-columns: 300px 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .chat-container {
+        grid-template-columns: 1fr;
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .chat-container>div {
+        height: 100vh;
+    }
+}
+
+/* Base style for mobile back button */
+.back-btn-mobile {
+    display: none !important;
+    cursor: pointer;
+    width: 24px !important;
+    margin-right: 10px;
+}
+
+/* Hide / Show rules based on JS classes */
+@media (max-width: 900px) {
+    .hidden-on-tablet {
+        display: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .hidden-on-mobile {
+        display: none !important;
+    }
+
+    .back-btn-mobile {
+        display: block !important;
+    }
 }

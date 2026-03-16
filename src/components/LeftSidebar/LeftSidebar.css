@@ -1,8 +1,9 @@
 .ls {
-  background: #0F172A; /* Slate 900 */
-  color: #E2E8F0; /* Slate 200 */
+  background: #0F172A;
+  /* Slate 900 */
+  color: #E2E8F0;
+  /* Slate 200 */
   height: 75vh;
-  width: 250px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -42,8 +43,10 @@
   width: 130px;
   padding: 20px;
   border-radius: 5px;
-  background-color: #F1F5F9; /* Slate 100 */
-  color: #0F172A; /* Slate 900 */
+  background-color: #F1F5F9;
+  /* Slate 100 */
+  color: #0F172A;
+  /* Slate 900 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
@@ -51,7 +54,8 @@
 .sub-menu hr {
   border: none;
   height: 1px;
-  background: #CBD5E1; /* Slate 300 */
+  background: #CBD5E1;
+  /* Slate 300 */
   margin: 8px 0;
 }
 
@@ -63,12 +67,14 @@
 }
 
 .sub-menu p:hover {
-  color: #0EA5E9; /* Sky 500 */
+  color: #0EA5E9;
+  /* Sky 500 */
 }
 
 /* Search bar */
 .ls-search {
-  background-color: #1E293B; /* Slate 800 */
+  background-color: #1E293B;
+  /* Slate 800 */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -85,13 +91,15 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #F1F5F9; /* Slate 100 */
+  color: #F1F5F9;
+  /* Slate 100 */
   font-size: 13px;
   width: 100%;
 }
 
 .ls-search input::placeholder {
-  color: #94A3B8; /* Slate 400 */
+  color: #94A3B8;
+  /* Slate 400 */
 }
 
 /* Scrollable friends list */
@@ -124,12 +132,14 @@
 }
 
 .friends span {
-  color: #94A3B8; /* Slate 400 */
+  color: #94A3B8;
+  /* Slate 400 */
   font-size: 11px;
 }
 
 .friends:hover {
-  background-color: #10B981; /* Emerald 500 */
+  background-color: #10B981;
+  /* Emerald 500 */
 }
 
 .friends:hover span {
@@ -141,6 +151,45 @@
 }
 
 .ls-list::-webkit-scrollbar-thumb {
-  background-color: #334155; /* Slate 700 */
+  background-color: #334155;
+  /* Slate 700 */
   border-radius: 10px;
+}
+
+.profile-clickable {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.profile-clickable:hover {
+  opacity: 0.8;
+}
+
+.friends-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.friends-info p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friends-info span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.online-indicator {
+  width: 10px;
+  height: 10px;
+  background-color: #10B981;
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
 }

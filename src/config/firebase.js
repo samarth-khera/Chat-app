@@ -8,7 +8,6 @@ import {
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
-// ✅ REPLACED with NEW Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC2kcYJaVKZRT210qOpfOQ3X9H3Gh5RGfI",
   authDomain: "chat-app-demo-f0e13.firebaseapp.com",
@@ -19,12 +18,10 @@ const firebaseConfig = {
   measurementId: "G-R1P359B6KM"
 };
 
-// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ✅ Signup logic (same)
 const signup = async (username,email,password) => {
   try{
     const res = await createUserWithEmailAndPassword(auth,email,password);
@@ -45,7 +42,6 @@ const signup = async (username,email,password) => {
   }
 }
 
-// ✅ Login logic (same)
 const login = async (email,password) => {
   try{
     await signInWithEmailAndPassword(auth,email,password);
@@ -55,7 +51,6 @@ const login = async (email,password) => {
   }
 }
 
-// ✅ Logout logic (same)
 const logout = async () => {
   try{
     await signOut(auth);
